@@ -1,0 +1,701 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>J.G. Stathis & Co. — Daily Timesheets</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet" />
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #f5f4f0;
+    --surface: #ffffff;
+    --surface2: #f0efe9;
+    --border: rgba(0,0,0,0.1);
+    --border-strong: rgba(0,0,0,0.2);
+    --text: #1a1a18;
+    --text-muted: #6b6b65;
+    --text-faint: #9e9e97;
+    --accent: #1a1a18;
+    --accent-text: #ffffff;
+    --danger: #c0392b;
+    --success: #1a6640;
+    --radius: 10px;
+    --radius-sm: 6px;
+  }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    font-size: 14px;
+    line-height: 1.5;
+  }
+
+  .page-wrap {
+    max-width: 820px;
+    margin: 0 auto;
+    padding: 2rem 1.25rem 4rem;
+  }
+
+  /* ── Brand ── */
+  .brand {
+    text-align: center;
+    padding: 2.5rem 0 2rem;
+  }
+  .brand-logo {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 48px; height: 48px;
+    background: var(--accent);
+    border-radius: 12px;
+    margin-bottom: 12px;
+  }
+  .brand-logo svg { width: 24px; height: 24px; fill: white; }
+  .brand h1 {
+    font-size: 22px;
+    font-weight: 600;
+    letter-spacing: -0.5px;
+  }
+  .brand p {
+    font-size: 13px;
+    color: var(--text-muted);
+    margin-top: 3px;
+    font-family: 'DM Mono', monospace;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+  }
+
+  /* ── Screens ── */
+  .screen { display: none; }
+  .screen.active { display: block; }
+
+  /* ── Login ── */
+  .login-card {
+    background: var(--surface);
+    border: 0.5px solid var(--border);
+    border-radius: var(--radius);
+    padding: 2rem;
+    max-width: 400px;
+    margin: 0 auto;
+  }
+  .login-card h2 { font-size: 17px; font-weight: 600; margin-bottom: 1.5rem; }
+
+  /* ── Forms ── */
+  label {
+    font-size: 12px;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--text-muted);
+    display: block;
+    margin-bottom: 5px;
+    margin-top: 16px;
+  }
+  label:first-child { margin-top: 0; }
+  input[type="text"],
+  input[type="date"],
+  input[type="time"],
+  input[type="number"],
+  input[type="password"],
+  select,
+  textarea {
+    width: 100%;
+    padding: 9px 12px;
+    border: 0.5px solid var(--border-strong);
+    border-radius: var(--radius-sm);
+    background: var(--surface);
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px;
+    outline: none;
+    transition: border-color 0.15s;
+  }
+  input:focus, select:focus, textarea:focus {
+    border-color: var(--accent);
+  }
+  textarea { resize: vertical; min-height: 64px; }
+
+  /* ── Buttons ── */
+  .btn {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 9px 16px; border-radius: var(--radius-sm);
+    font-family: 'DM Sans', sans-serif; font-size: 13px; font-weight: 500;
+    cursor: pointer; border: 0.5px solid var(--border-strong);
+    background: var(--surface); color: var(--text);
+    transition: background 0.12s;
+    white-space: nowrap;
+  }
+  .btn:hover { background: var(--surface2); }
+  .btn-primary {
+    background: var(--accent); color: var(--accent-text);
+    border-color: transparent; width: 100%; justify-content: center;
+    margin-top: 1.5rem; padding: 11px 16px; font-size: 14px;
+  }
+  .btn-primary:hover { opacity: 0.88; background: var(--accent); }
+  .btn-danger { color: var(--danger); border-color: transparent; background: transparent; padding: 4px 6px; }
+  .btn-danger:hover { background: #fdecea; }
+  .btn-export {
+    background: var(--surface); border: 0.5px solid var(--border-strong);
+    font-size: 13px;
+  }
+
+  /* ── Topbar ── */
+  .topbar {
+    display: flex; align-items: flex-start; justify-content: space-between;
+    margin-bottom: 1.5rem; gap: 12px; flex-wrap: wrap;
+  }
+  .topbar-left h2 { font-size: 19px; font-weight: 600; letter-spacing: -0.3px; }
+  .topbar-left p { font-size: 13px; color: var(--text-muted); margin-top: 2px; }
+  .topbar-right { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+
+  /* ── Day Nav ── */
+  .day-nav {
+    display: flex; gap: 6px; margin-bottom: 1.25rem; flex-wrap: wrap;
+  }
+  .day-btn {
+    padding: 6px 14px; border-radius: 99px; font-size: 13px; font-weight: 500;
+    border: 0.5px solid var(--border-strong); background: var(--surface);
+    cursor: pointer; color: var(--text); transition: all 0.12s;
+  }
+  .day-btn:hover { background: var(--surface2); }
+  .day-btn.active {
+    background: var(--accent); color: var(--accent-text);
+    border-color: transparent;
+  }
+  .day-btn .day-count {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 16px; height: 16px; border-radius: 50%;
+    background: rgba(255,255,255,0.25); font-size: 10px;
+    margin-left: 4px;
+  }
+  .day-btn:not(.active) .day-count {
+    background: var(--surface2); color: var(--text-muted);
+  }
+
+  /* ── Metrics ── */
+  .metrics {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+    margin-bottom: 1.25rem;
+  }
+  .metric {
+    background: var(--surface);
+    border: 0.5px solid var(--border);
+    border-radius: var(--radius);
+    padding: 14px 16px;
+  }
+  .metric-label { font-size: 11px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; font-weight: 500; margin-bottom: 4px; }
+  .metric-value { font-size: 26px; font-weight: 600; letter-spacing: -1px; font-family: 'DM Mono', monospace; }
+
+  /* ── Entries ── */
+  .entries-card {
+    background: var(--surface);
+    border: 0.5px solid var(--border);
+    border-radius: var(--radius);
+    margin-bottom: 1.25rem;
+    overflow: hidden;
+  }
+  .entries-header {
+    padding: 12px 16px;
+    border-bottom: 0.5px solid var(--border);
+    display: flex; align-items: center; justify-content: space-between;
+    font-size: 13px; font-weight: 600;
+  }
+  .entries-header span:last-child { font-weight: 400; color: var(--text-muted); font-size: 12px; }
+
+  .entry-row {
+    padding: 12px 16px;
+    border-bottom: 0.5px solid var(--border);
+    display: grid;
+    grid-template-columns: 1fr 1.5fr 90px 36px;
+    gap: 12px;
+    align-items: start;
+  }
+  .entry-row:last-child { border-bottom: none; }
+  .entry-client { font-weight: 500; font-size: 13px; }
+  .entry-meta { font-size: 11px; color: var(--text-muted); margin-top: 3px; font-family: 'DM Mono', monospace; }
+  .entry-narrative { font-size: 13px; color: var(--text); }
+  .entry-costcode { font-size: 11px; color: var(--text-muted); font-family: 'DM Mono', monospace; margin-top: 3px; }
+  .entry-time { font-size: 11px; color: var(--text-faint); margin-top: 3px; }
+  .units-pill {
+    background: var(--surface2);
+    border-radius: 99px; padding: 4px 10px;
+    font-size: 13px; font-weight: 600; text-align: center;
+    font-family: 'DM Mono', monospace;
+    white-space: nowrap;
+  }
+  .empty-state {
+    padding: 2.5rem; text-align: center;
+    color: var(--text-muted); font-size: 13px;
+  }
+  .empty-state p { margin-top: 6px; font-size: 12px; }
+
+  /* ── Add Entry Form ── */
+  .add-form {
+    background: var(--surface);
+    border: 0.5px solid var(--border);
+    border-radius: var(--radius);
+    padding: 1.5rem;
+    margin-bottom: 1.25rem;
+  }
+  .add-form h3 { font-size: 15px; font-weight: 600; margin-bottom: 1.25rem; }
+  .form-grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; }
+  .form-grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .form-actions { display: flex; gap: 8px; justify-content: flex-end; margin-top: 1.25rem; }
+  .btn-add {
+    background: var(--accent); color: var(--accent-text);
+    border: none; border-radius: var(--radius-sm);
+    padding: 9px 22px; font-size: 13px; font-weight: 500;
+    cursor: pointer; font-family: 'DM Sans', sans-serif;
+  }
+  .btn-add:hover { opacity: 0.85; }
+
+  /* ── Export ── */
+  .export-section {
+    background: var(--surface);
+    border: 0.5px solid var(--border);
+    border-radius: var(--radius);
+    padding: 1.25rem 1.5rem;
+  }
+  .export-section h3 { font-size: 14px; font-weight: 600; margin-bottom: 10px; }
+  .export-btns { display: flex; gap: 8px; flex-wrap: wrap; }
+
+  /* ── Toast ── */
+  .toast {
+    position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%);
+    background: var(--accent); color: var(--accent-text);
+    padding: 10px 20px; border-radius: 99px; font-size: 13px; font-weight: 500;
+    pointer-events: none; opacity: 0; transition: opacity 0.2s;
+    z-index: 999; white-space: nowrap;
+  }
+  .toast.show { opacity: 1; }
+
+  /* ── New staff row ── */
+  #new-staff-row { margin-top: 0; }
+
+  @media (max-width: 600px) {
+    .metrics { grid-template-columns: repeat(3, 1fr); }
+    .form-grid-3 { grid-template-columns: 1fr 1fr; }
+    .form-grid-3 > *:last-child { grid-column: span 2; }
+    .entry-row { grid-template-columns: 1fr 80px 32px; }
+    .entry-row > *:nth-child(2) { display: none; }
+    .metric-value { font-size: 20px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="page-wrap">
+
+  <div class="brand">
+    <div class="brand-logo">
+      <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8l-6-6zm-1 1.5L18.5 9H13V3.5zM8 13h8v1.5H8V13zm0 3h5v1.5H8V16zm0-6h3v1.5H8V10z"/>
+      </svg>
+    </div>
+    <h1>J.G. Stathis & Co.</h1>
+    <p>Daily Timesheet System</p>
+  </div>
+
+  <!-- LOGIN -->
+  <div id="screen-login" class="screen active">
+    <div class="login-card">
+      <h2>Sign in to your timesheet</h2>
+      <label>Your name</label>
+      <select id="sel-staff">
+        <option value="">— select staff member —</option>
+        <option value="Nicholas Stathis">Nicholas Stathis</option>
+        <option value="__new__">+ Add new staff member...</option>
+      </select>
+      <div id="new-staff-row" style="display:none">
+        <label>New staff member name</label>
+        <input type="text" id="new-staff-name" placeholder="Full name" />
+      </div>
+      <label>Date</label>
+      <input type="date" id="sel-date" />
+      <button class="btn btn-primary" onclick="doLogin()">Continue →</button>
+    </div>
+  </div>
+
+  <!-- MAIN APP -->
+  <div id="screen-main" class="screen">
+
+    <div class="topbar">
+      <div class="topbar-left">
+        <h2 id="main-name"></h2>
+        <p id="main-date"></p>
+      </div>
+      <div class="topbar-right">
+        <button class="btn" onclick="goLogout()">Sign out</button>
+      </div>
+    </div>
+
+    <div class="day-nav" id="day-nav"></div>
+
+    <div class="metrics">
+      <div class="metric">
+        <div class="metric-label">Units today</div>
+        <div class="metric-value" id="m-units">0</div>
+      </div>
+      <div class="metric">
+        <div class="metric-label">Entries</div>
+        <div class="metric-value" id="m-entries">0</div>
+      </div>
+      <div class="metric">
+        <div class="metric-label">Hours approx</div>
+        <div class="metric-value" id="m-hours">0.0</div>
+      </div>
+    </div>
+
+    <div class="entries-card">
+      <div class="entries-header">
+        <span id="entries-day-label">Today's entries</span>
+        <span id="entries-count"></span>
+      </div>
+      <div id="entries-list"></div>
+    </div>
+
+    <div class="add-form">
+      <h3>Add time entry</h3>
+      <div class="form-grid-3">
+        <div>
+          <label>Start time</label>
+          <input type="time" id="f-start" />
+        </div>
+        <div>
+          <label>Finish time</label>
+          <input type="time" id="f-finish" />
+        </div>
+        <div>
+          <label>Units</label>
+          <input type="number" id="f-units" min="1" max="200" placeholder="e.g. 12" />
+        </div>
+      </div>
+      <div class="form-grid-2" style="margin-top:0">
+        <div>
+          <label>Client or Company name</label>
+          <input type="text" id="f-client" placeholder="e.g. De Araugo Family Trust" />
+        </div>
+        <div>
+          <label>Client code</label>
+          <input type="text" id="f-code" placeholder="e.g. DEA00004" />
+        </div>
+      </div>
+      <div class="form-grid-3" style="margin-top:0">
+        <div>
+          <label>Matter</label>
+          <input type="text" id="f-matter" placeholder="e.g. March 2026 BAS" />
+        </div>
+        <div>
+          <label>Cost code</label>
+          <input type="text" id="f-costcode" placeholder="e.g. BAS-T" />
+        </div>
+        <div></div>
+      </div>
+      <div style="margin-top:0">
+        <label>Narrative to be posted</label>
+        <textarea id="f-narrative" placeholder="e.g. March 2026 BAS — lodgement and review"></textarea>
+      </div>
+      <div class="form-actions">
+        <button class="btn" onclick="clearForm()">Clear</button>
+        <button class="btn-add" onclick="addEntry()">Add entry</button>
+      </div>
+    </div>
+
+    <div class="export-section">
+      <h3>Export timesheets</h3>
+      <div class="export-btns">
+        <button class="btn btn-export" onclick="exportCSV('day')">Export today (CSV)</button>
+        <button class="btn btn-export" onclick="exportCSV('week')">Export full week (CSV)</button>
+        <button class="btn btn-export" onclick="exportCSV('all')">Export all staff (CSV)</button>
+      </div>
+    </div>
+
+  </div><!-- /screen-main -->
+
+</div><!-- /page-wrap -->
+
+<div class="toast" id="toast"></div>
+
+<script>
+const DAYS = ['Monday','Tuesday','Wednesday','Thursday','Friday'];
+const STORAGE_KEY = 'jgs_timesheets_v1';
+const STAFF_KEY = 'jgs_staff_v1';
+
+let currentUser = '';
+let currentDate = '';
+let currentDay = 'Monday';
+
+// ── Persistence ──────────────────────────────────────────────
+function loadData() {
+  try { return JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}'); } catch(e) { return {}; }
+}
+function saveData(d) {
+  try { localStorage.setItem(STORAGE_KEY, JSON.stringify(d)); } catch(e) {}
+}
+function loadStaff() {
+  try { return JSON.parse(localStorage.getItem(STAFF_KEY) || '["Nicholas Stathis"]'); } catch(e) { return ['Nicholas Stathis']; }
+}
+function saveStaff(s) {
+  try { localStorage.setItem(STAFF_KEY, JSON.stringify(s)); } catch(e) {}
+}
+
+function getKey(user, day) { return user + '||' + day; }
+
+function getEntries(user, day) {
+  const d = loadData();
+  return d[getKey(user || currentUser, day || currentDay)] || [];
+}
+function saveEntries(entries, user, day) {
+  const d = loadData();
+  d[getKey(user || currentUser, day || currentDay)] = entries;
+  saveData(d);
+}
+
+// ── Staff dropdown ───────────────────────────────────────────
+function populateStaffDropdown() {
+  const sel = document.getElementById('sel-staff');
+  const staff = loadStaff();
+  // clear existing except placeholder and "add new"
+  while (sel.options.length > 1) sel.remove(1);
+  staff.forEach(name => {
+    const opt = document.createElement('option');
+    opt.value = name; opt.text = name;
+    sel.appendChild(opt);
+  });
+  const addOpt = document.createElement('option');
+  addOpt.value = '__new__'; addOpt.text = '+ Add new staff member...';
+  sel.appendChild(addOpt);
+}
+
+document.getElementById('sel-staff').addEventListener('change', function() {
+  document.getElementById('new-staff-row').style.display = this.value === '__new__' ? 'block' : 'none';
+});
+
+// ── Helpers ──────────────────────────────────────────────────
+function getDayFromDate(dateStr) {
+  if (!dateStr) return 'Monday';
+  const d = new Date(dateStr + 'T00:00:00');
+  const names = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+  const name = names[d.getDay()];
+  return DAYS.includes(name) ? name : 'Monday';
+}
+
+function formatDate(dateStr) {
+  if (!dateStr) return '';
+  const d = new Date(dateStr + 'T00:00:00');
+  return d.toLocaleDateString('en-AU', { weekday:'long', day:'numeric', month:'long', year:'numeric' });
+}
+
+// ── Login ────────────────────────────────────────────────────
+function doLogin() {
+  let staff = document.getElementById('sel-staff').value;
+  const newName = document.getElementById('new-staff-name').value.trim();
+
+  if (staff === '__new__') {
+    if (!newName) { showToast('Please enter a name'); return; }
+    staff = newName;
+    const list = loadStaff();
+    if (!list.includes(staff)) { list.push(staff); saveStaff(list); }
+    populateStaffDropdown();
+    document.getElementById('new-staff-row').style.display = 'none';
+  }
+  if (!staff) { showToast('Please select your name'); return; }
+  const dateVal = document.getElementById('sel-date').value;
+  if (!dateVal) { showToast('Please select a date'); return; }
+
+  currentUser = staff;
+  currentDate = dateVal;
+  currentDay = getDayFromDate(dateVal);
+
+  document.getElementById('screen-login').classList.remove('active');
+  document.getElementById('screen-main').classList.add('active');
+  document.getElementById('main-name').textContent = currentUser;
+  document.getElementById('main-date').textContent = formatDate(currentDate);
+
+  buildDayNav();
+  renderEntries();
+}
+
+function goLogout() {
+  document.getElementById('screen-main').classList.remove('active');
+  document.getElementById('screen-login').classList.add('active');
+}
+
+// ── Day Nav ──────────────────────────────────────────────────
+function buildDayNav() {
+  const nav = document.getElementById('day-nav');
+  nav.innerHTML = '';
+  DAYS.forEach(d => {
+    const count = getEntries(currentUser, d).length;
+    const btn = document.createElement('button');
+    btn.className = 'day-btn' + (d === currentDay ? ' active' : '');
+    btn.innerHTML = d + (count > 0 ? `<span class="day-count">${count}</span>` : '');
+    btn.onclick = () => {
+      currentDay = d;
+      document.querySelectorAll('.day-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      renderEntries();
+    };
+    nav.appendChild(btn);
+  });
+}
+
+function refreshDayNav() {
+  document.querySelectorAll('.day-btn').forEach((btn, i) => {
+    const d = DAYS[i];
+    if (!d) return;
+    const count = getEntries(currentUser, d).length;
+    btn.innerHTML = d + (count > 0 ? `<span class="day-count">${count}</span>` : '');
+    btn.className = 'day-btn' + (d === currentDay ? ' active' : '');
+  });
+}
+
+// ── Render entries ───────────────────────────────────────────
+function renderEntries() {
+  const entries = getEntries();
+  const totalUnits = entries.reduce((s, e) => s + (parseInt(e.units) || 0), 0);
+  document.getElementById('m-units').textContent = totalUnits;
+  document.getElementById('m-entries').textContent = entries.length;
+  document.getElementById('m-hours').textContent = (totalUnits * 6 / 60).toFixed(1);
+  document.getElementById('entries-count').textContent = entries.length + ' item' + (entries.length !== 1 ? 's' : '');
+  document.getElementById('entries-day-label').textContent = currentDay + "'s entries";
+
+  const list = document.getElementById('entries-list');
+  if (entries.length === 0) {
+    list.innerHTML = '<div class="empty-state"><strong>No entries yet</strong><p>Add your first time entry for ' + currentDay + ' below.</p></div>';
+    return;
+  }
+  list.innerHTML = entries.map((e, i) => `
+    <div class="entry-row">
+      <div>
+        <div class="entry-client">${esc(e.client || '—')}</div>
+        <div class="entry-meta">${esc(e.code || '')}${e.matter ? ' · ' + esc(e.matter) : ''}</div>
+        ${e.start ? `<div class="entry-time">${esc(e.start)}${e.finish ? ' – ' + esc(e.finish) : ''}</div>` : ''}
+      </div>
+      <div>
+        <div class="entry-narrative">${esc(e.narrative || '—')}</div>
+        ${e.costcode ? `<div class="entry-costcode">${esc(e.costcode)}</div>` : ''}
+      </div>
+      <div class="units-pill">${parseInt(e.units) || 0} u</div>
+      <div>
+        <button class="btn btn-danger" onclick="deleteEntry(${i})" title="Remove">✕</button>
+      </div>
+    </div>
+  `).join('');
+}
+
+function esc(s) {
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+// ── Add / Delete ─────────────────────────────────────────────
+function addEntry() {
+  const client = document.getElementById('f-client').value.trim();
+  const units = document.getElementById('f-units').value;
+  if (!client) { showToast('Client name is required'); return; }
+  if (!units || parseInt(units) < 1) { showToast('Please enter units'); return; }
+
+  const entry = {
+    client,
+    code:      document.getElementById('f-code').value.trim(),
+    matter:    document.getElementById('f-matter').value.trim(),
+    costcode:  document.getElementById('f-costcode').value.trim(),
+    narrative: document.getElementById('f-narrative').value.trim(),
+    units:     parseInt(units),
+    start:     document.getElementById('f-start').value,
+    finish:    document.getElementById('f-finish').value,
+    added:     new Date().toISOString()
+  };
+
+  const entries = getEntries();
+  entries.push(entry);
+  saveEntries(entries);
+  clearForm();
+  renderEntries();
+  refreshDayNav();
+  showToast('Entry saved');
+}
+
+function deleteEntry(i) {
+  if (!confirm('Remove this entry?')) return;
+  const entries = getEntries();
+  entries.splice(i, 1);
+  saveEntries(entries);
+  renderEntries();
+  refreshDayNav();
+  showToast('Entry removed');
+}
+
+function clearForm() {
+  ['f-client','f-code','f-matter','f-costcode','f-narrative','f-units','f-start','f-finish']
+    .forEach(id => { document.getElementById(id).value = ''; });
+}
+
+// ── Export CSV ───────────────────────────────────────────────
+function toCSVRow(arr) {
+  return arr.map(v => '"' + String(v == null ? '' : v).replace(/"/g, '""') + '"').join(',');
+}
+
+function exportCSV(mode) {
+  const header = ['Employee','Day','Date','Client Name','Client Code','Matter','Cost Code','Narrative','Units','Start Time','Finish Time'];
+  const rows = [header];
+  const allData = loadData();
+
+  const allKeys = Object.keys(allData);
+
+  let targetKeys = [];
+  if (mode === 'day') {
+    targetKeys = [getKey(currentUser, currentDay)];
+  } else if (mode === 'week') {
+    targetKeys = DAYS.map(d => getKey(currentUser, d));
+  } else {
+    targetKeys = allKeys;
+  }
+
+  targetKeys.forEach(key => {
+    if (!allData[key] || allData[key].length === 0) return;
+    const parts = key.split('||');
+    const user = parts[0], day = parts[1];
+    allData[key].forEach(e => {
+      rows.push([user, day, currentDate, e.client, e.code, e.matter, e.costcode, e.narrative, e.units, e.start, e.finish]);
+    });
+  });
+
+  if (rows.length === 1) { showToast('No data to export'); return; }
+
+  const csv = rows.map(toCSVRow).join('\r\n');
+  const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  const label = mode === 'day' ? currentDay : (mode === 'week' ? 'Week' : 'AllStaff');
+  a.download = `JGStathis_Timesheet_${label}_${currentDate}.csv`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+  showToast('CSV downloaded');
+}
+
+// ── Toast ────────────────────────────────────────────────────
+let toastTimer;
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.classList.remove('show'), 2400);
+}
+
+// ── Init ─────────────────────────────────────────────────────
+populateStaffDropdown();
+document.getElementById('sel-date').value = new Date().toISOString().split('T')[0];
+</script>
+</body>
+</html>
